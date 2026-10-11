@@ -1,0 +1,67 @@
+MindPulse AI skeleton update summary
+
+Current structure correction:
+- Moved backend/data/ to backend/app/data/.
+- Moved backend/prompts/ to backend/app/prompts/.
+- Updated the README structure and startup documentation to match.
+
+Repository hygiene:
+- Removed the extra did.txt from the earlier commit and recreated this summary
+  only because the project update requested a current work log.
+- No real .env file is present.
+- No localStorage or sessionStorage references exist in the frontend.
+- The README's pre-existing content changes were preserved.
+
+Validation:
+- Backend starts with uvicorn app.main:app --reload from backend/.
+- GET /api/v1/health returns {"status":"ok","version":"0.1.0"}.
+- Backend placeholder tests pass: 5 passed in 0.06s.
+- Frontend production build passes with npm run build.
+- Frontend development server responds successfully.
+
+Starter scope remains unchanged:
+- API endpoints are stubs returning HTTP 501, except /api/v1/health.
+- No real application logic, database, ORM, login, persistence, API keys,
+  phone numbers, or request-body logging was added.
+
+Project structure:
+
+mindpulse/
+├── README.md
+├── did.txt
+├── .gitignore
+├── .env.example
+├── docker-compose.yml
+├── Dockerfile.backend
+├── Dockerfile.frontend
+├── frontend/
+│   ├── package.json
+│   ├── package-lock.json
+│   └── src/
+│       ├── main.tsx
+│       ├── App.tsx
+│       ├── routes.tsx
+│       ├── api/
+│       ├── store/
+│       ├── screens/
+│       ├── components/
+│       ├── hooks/
+│       └── lib/
+├── backend/
+│   ├── requirements.txt
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── config.py
+│   │   ├── schemas.py
+│   │   ├── errors.py
+│   │   ├── logging_setup.py
+│   │   ├── routers/
+│   │   ├── services/
+│   │   │   └── providers/
+│   │   ├── data/
+│   │   └── prompts/
+│   └── tests/
+└── eval/
+    ├── .gitkeep
+    ├── run_all.py
+    └── report.md

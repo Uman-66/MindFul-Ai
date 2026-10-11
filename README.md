@@ -1,10 +1,10 @@
 # MindPulse AI 🧠
 
-> **A multimodal deep-learning system for early detection of changing student stress and emotional-wellness patterns.**
+> **A privacy-first, one-session wellbeing check-in for students. A short video, a written paragraph, and a few ratings become an evidence-backed summary of what is weighing on you, with honest uncertainty and a clear path to a real person when it matters. Nothing is stored.**
 
-MindPulse AI is a research-oriented AI system designed to analyze multiple signals — **journal text, voice, behavioral/contextual data, and optional facial/video information** — and model how these signals change over time.
+Built for the **AMD Developer Hackathon: ACT III**, **Track 2: Health and Wellbeing**.
 
-The goal is not to diagnose mental-health disorders. Instead, MindPulse AI acts as an **early-warning and wellness-support system**, helping identify potentially concerning changes and providing supportive, personalized recommendations.
+MindPulse AI is **not** a diagnostic tool. It never says a person "has" a condition. It is a reflection and navigation aid.
 
 ---
 
@@ -12,884 +12,425 @@ The goal is not to diagnose mental-health disorders. Instead, MindPulse AI acts 
 
 - [Problem](#-problem)
 - [Solution](#-solution)
-- [Key Idea](#-key-idea)
+- [How It Works](#-how-it-works)
 - [System Architecture](#-system-architecture)
-- [Deep Learning Models](#-deep-learning-models)
-- [Data Flow](#-data-flow)
-- [Core Features](#-core-features)
+- [Analysis Branches](#-analysis-branches)
+- [Fusion and the Red Alarm](#-fusion-and-the-red-alarm)
+- [Safety and Privacy](#-safety-and-privacy)
+- [AI Models](#-ai-models)
+- [AMD Component](#-amd-component)
 - [Technology Stack](#-technology-stack)
 - [Project Structure](#-project-structure)
-- [Training Strategy](#-training-strategy)
+- [API Overview](#-api-overview)
 - [Evaluation](#-evaluation)
-- [Hackathon MVP](#-hackathon-mvp)
-- [Future Extensions](#-future-extensions)
-- [Safety & Privacy](#-safety--privacy)
-- [Team Goal](#-team-goal)
+- [Running the Project](#-running-the-project)
+- [Limitations](#-limitations)
+- [Future Work](#-future-work)
+- [Team](#-team)
+- [Disclaimer](#-disclaimer)
 
 ---
 
 ## 🚨 Problem
 
-Students can experience gradually increasing:
+Students deal with academic pressure, poor sleep, social isolation, money worries, and emotional exhaustion. These pressures build up quietly, and many students cannot name what is actually weighing on them, or whether it is serious enough to ask for help.
 
-- Academic pressure
-- Stress
-- Emotional exhaustion
-- Sleep disruption
-- Social isolation
-- Financial pressure
-- Relationship difficulties
-- Loss of motivation
-- Burnout-related symptoms
+Existing wellness apps usually fall into two groups:
 
-These changes may develop over several days or weeks.
+- **Questionnaire apps** that reduce a complicated week to one score.
+- **Sentiment tools** that label text as positive or negative and say nothing about the cause.
 
-Many existing wellness applications rely primarily on:
+Two further problems:
 
-- Questionnaires
-- Single-session assessments
-- Basic sentiment analysis
-- Simple rule-based systems
-
-A major limitation is that emotional states are **dynamic and multimodal**.
-
-A single journal entry cannot necessarily represent a student's overall state.
-
-For example:
-
-```text
-Day 1 → Normal
-Day 2 → Slightly stressed
-Day 3 → More workload
-Day 4 → Poor sleep
-Day 5 → Negative journal language
-Day 6 → Increased stress indicators
-Day 7 → Significant change from baseline
-```
-
-MindPulse AI focuses on detecting this **trajectory**, rather than relying only on a single prediction.
+1. Students do not know **what to bring** to a friend, mentor, or counselor.
+2. Students **do not trust apps** with sensitive information. Most wellness tools create accounts and keep history, which is a barrier on its own.
 
 ---
 
-# 💡 Solution
+## 💡 Solution
 
-MindPulse AI combines multiple deep-learning models into a single multimodal and longitudinal architecture.
+MindPulse AI is a **guided, one-session check-in**.
 
-### Input
-
-```text
-Journal + Voice + Behavior + Optional Video
-```
-
-### Processing
-
-```text
-Individual Deep Learning Encoders
-              ↓
-       Multimodal Fusion
-              ↓
-      Temporal Transformer
-              ↓
-       Multi-Task Learning
-              ↓
-      Explainability Layer
-              ↓
-      Support Recommendation
-```
-
-### Output
-
-The system provides:
-
-- Current AI-generated wellness indicators
-- Recent trend/trajectory
-- Contributing signals
-- Changes compared with recent history
-- Personalized supportive recommendations
+1. The student records short spoken answers (video or voice only) and writes a short paragraph.
+2. They answer five quick rating questions.
+3. The system analyzes each input **independently**, then merges the results with **fixed, transparent rules**.
+4. It shows the **specific stressors**, each with the student's own words as evidence, a confidence level, and what it is unsure about.
+5. If it detects a possible crisis, it shows a **red alarm** with verified helplines and nearby help.
+6. Otherwise it shows a **dashboard** with a side chat and two downloadable PDFs: a wellbeing summary and a 15-day plan.
+7. The session ends and **nothing is stored**.
 
 ---
 
-# 🎯 Key Idea
-
-The main research idea is:
-
-> **Don't only ask "How is the student today?" — model "How is the student's state changing over time?"**
-
-Every interaction generates a multimodal representation.
+## 🧭 How It Works
 
 ```text
-Day 1 ──► Multimodal Embedding
-Day 2 ──► Multimodal Embedding
-Day 3 ──► Multimodal Embedding
-Day 4 ──► Multimodal Embedding
-...
-Day N ──► Multimodal Embedding
-                │
-                ▼
-       Temporal Transformer
-                │
-                ▼
-       Longitudinal Pattern
-```
-
-This allows the system to model trends instead of treating every day as an independent prediction.
-
----
-
-# 🏗 System Architecture
-
-```text
-                         ┌──────────────────────┐
-                         │      STUDENT APP     │
-                         └──────────┬───────────┘
-                                    │
-              ┌─────────────────────┼─────────────────────┐
-              │                     │                     │
-              ▼                     ▼                     ▼
-        ┌───────────┐         ┌───────────┐         ┌───────────┐
-        │   TEXT    │         │   VOICE   │         │  VIDEO    │
-        │  JOURNAL  │         │  RECORDING│         │  OPTIONAL │
-        └─────┬─────┘         └─────┬─────┘         └─────┬─────┘
-              │                     │                     │
-              ▼                     ▼                     ▼
-        ┌───────────┐         ┌───────────┐         ┌───────────┐
-        │ BERT /    │         │ wav2vec2  │         │ ViT / CNN │
-        │ RoBERTa   │         │ / HuBERT  │         │           │
-        └─────┬─────┘         └─────┬─────┘         └─────┬─────┘
-              │                     │                     │
-              ▼                     ▼                     ▼
-        Text Embedding        Voice Embedding       Visual Embedding
-              │                     │                     │
-              └─────────────────────┼─────────────────────┘
-                                    │
-                     ┌──────────────▼──────────────┐
-                     │    BEHAVIORAL FEATURES      │
-                     │ Sleep / Workload / Activity │
-                     └──────────────┬──────────────┘
-                                    │
-                                    ▼
-                     ┌─────────────────────────────┐
-                     │      MULTIMODAL FUSION       │
-                     │                             │
-                     │  Cross-Attention Transformer│
-                     └──────────────┬──────────────┘
-                                    │
-                                    ▼
-                     ┌─────────────────────────────┐
-                     │    TEMPORAL TRANSFORMER      │
-                     │                             │
-                     │   Day 1 → Day N             │
-                     └──────────────┬──────────────┘
-                                    │
-                                    ▼
-                     ┌─────────────────────────────┐
-                     │     MULTI-TASK HEADS         │
-                     ├─────────────────────────────┤
-                     │ Stress Indicator             │
-                     │ Emotional Exhaustion         │
-                     │ Risk Trajectory              │
-                     └──────────────┬──────────────┘
-                                    │
-                     ┌──────────────┴──────────────┐
-                     ▼                             ▼
-          ┌─────────────────────┐       ┌─────────────────────┐
-          │  EXPLAINABILITY     │       │ SUPPORT ENGINE      │
-          │                     │       │                     │
-          │ SHAP / Grad-CAM     │       │ Personalized        │
-          │ Attention           │       │ Recommendations     │
-          └──────────┬──────────┘       └──────────┬──────────┘
-                     │                             │
-                     └──────────────┬──────────────┘
-                                    ▼
-                     ┌─────────────────────────────┐
-                     │       USER DASHBOARD         │
-                     │                             │
-                     │ Current indicators           │
-                     │ 7/14-day trends              │
-                     │ Contributing signals         │
-                     │ Personalized support         │
-                     └─────────────────────────────┘
+Landing notice (English only, not a diagnosis, nothing stored)
+   ↓
+Consent: video + audio, or voice only
+   ↓
+Profile: age (18-25), country, city
+   ↓
+3 spoken questions (each analyzed in the background as soon as it is recorded)
+   ↓
+Written paragraph
+   ↓
+5 rating questions (1-5)
+   ↓
+Fusion (fixed rules)
+   ↓
+┌────────────────────────────┬─────────────────────────────────────────┐
+│ Red alarm                  │ Dashboard                               │
+│ Verified helplines first   │ Overall level + confidence              │
+│ Nearby help loads after    │ Stressors with the student's own quotes │
+│                            │ Side chat                               │
+│                            │ PDF 1: wellbeing summary                │
+│                            │ PDF 2: 15-day plan                      │
+└────────────────────────────┴─────────────────────────────────────────┘
+   ↓
+End session: all state is cleared
 ```
 
 ---
 
-# 🤖 Deep Learning Models
-
-## 1. Text Encoder
-
-### Candidate Models
-
-- BERT
-- RoBERTa
-- DeBERTa
-
-### Pipeline
+## 🏗 System Architecture
 
 ```text
-Journal Entry
-     ↓
-Tokenizer
-     ↓
-Transformer Encoder
-     ↓
-Contextual Embedding
-     ↓
-Text Representation
+                       STUDENT (browser, React + TypeScript)
+          holds all session data in memory only (no localStorage, no cookies)
+                                   │
+        consent → profile → 3 spoken answers → paragraph → ratings
+                                   │
+                                   ▼
+                     ┌───────────────────────────┐
+                     │   FastAPI (stateless)     │
+                     │   no database             │
+                     │   no request-body logging │
+                     └─────────────┬─────────────┘
+                                   │
+       ┌──────────────┬────────────┴───────────┬──────────────┐
+       ▼              ▼                        ▼              ▼
+┌─────────────┐ ┌───────────────┐     ┌────────────────┐ ┌──────────────┐
+│ SPOKEN      │ │ VIDEO         │     │ PARAGRAPH      │ │ RATINGS      │
+│ audio →     │ │ frames →      │     │ text →         │ │ 5 items →    │
+│ transcript  │ │ vision model  │     │ LLM indicators │ │ scoring      │
+│ → LLM       │ │ (observable   │     │ + quote check  │ │ + safety item│
+│ indicators  │ │ cues only)    │     │                │ │              │
+└──────┬──────┘ └───────┬───────┘     └───────┬────────┘ └──────┬───────┘
+       │                │                     │                 │
+       └────────────────┴──────────┬──────────┴─────────────────┘
+                                   ▼
+                  ┌──────────────────────────────────┐
+                  │ CRISIS RULES (deterministic)     │
+                  │ run on every transcript, the     │
+                  │ paragraph, ratings, and chat     │
+                  └────────────────┬─────────────────┘
+                                   ▼
+                  ┌──────────────────────────────────┐
+                  │ FUSION (fixed weights, config)   │
+                  └───────┬──────────────────┬───────┘
+                          │                  │
+                 red alarm                dashboard
+                          │                  │
+              Verified helplines      ┌──────┴────────────────┐
+              + nearby help           │ Plan │ PDFs │ Chat    │
+                                      └───────────────────────┘
 ```
 
-The text encoder extracts semantic and contextual information from journal entries.
+**The server keeps nothing between requests.** The browser holds every branch result in memory and sends what the next step needs. Closing or refreshing the tab ends the session.
 
 ---
 
-## 2. Speech Encoder
+## 🔬 Analysis Branches
 
-### Candidate Models
+Each branch is analyzed **independently** and returns the same kind of result: a score, a level, a confidence, evidence, and warnings.
 
-- wav2vec 2.0
-- HuBERT
+| Branch | Input | What it does | Weight in score |
+|---|---|---|---|
+| **Spoken** | Audio from the video or voice recording | Speech-to-text, then an LLM extracts stressor indicators with exact supporting quotes | Yes |
+| **Paragraph** | Written text | LLM extracts the same indicators with quotes | Yes |
+| **Ratings** | Five 1-5 questions | Deterministic scoring, plus a safety item | Yes |
+| **Video** | 8 sampled frames | A vision model reports only observable cues (face visible, looking at the camera, yawning, head down, restlessness). It never names emotions or conditions. | **No.** Supporting note only; it can lower confidence and add a "mixed signals" note. |
 
-### Pipeline
+### Ten fixed indicators
 
-```text
-Voice Recording
-     ↓
-Audio Preprocessing
-     ↓
-Speech Encoder
-     ↓
-Frame-level Representations
-     ↓
-Temporal Pooling
-     ↓
-Voice Embedding
+`hopelessness`, `exhaustion`, `overwhelm`, `low_motivation`, `social_withdrawal`, `sleep_disruption`, `concentration`, `academic_pressure`, `financial_stress`, `relationship_stress`
+
+Each indicator gets a level from 0 to 3, a confidence, and **an exact quote from the student's own words**. If the model cannot quote it, the level is 0. Quotes are verified in code, and any indicator whose quote cannot be found in the source is dropped.
+
+The LLM only extracts evidence. **Code computes the score.**
+
+---
+
+## ⚖️ Fusion and the Red Alarm
+
+Fusion is a **pure, deterministic function**. Weights and thresholds are in `backend/app/data/fusion.yaml`. No model is called at this step.
+
+```yaml
+branch_weights: { paragraph: 0.35, spoken: 0.30, ratings: 0.35 }   # video weight is 0 by design
+levels: { moderate_min: 35, high_min: 65 }
+high_signal_min_confidence: 0.5
+red_alarm: { crisis_any_source: true, safety_rating_min: 2, high_branches_required: 2 }
 ```
 
-The speech model provides an acoustic representation that becomes one input to the multimodal system.
+**The red alarm triggers when:**
+
+- crisis language is detected in any transcript, the paragraph, or a chat message, **or** the safety rating is answered above "never", **or**
+- **two independent branches** (spoken, paragraph, ratings) are both high with enough confidence.
+
+The video branch never triggers an alarm and never counts as one of the two.
+
+**Human review is recommended** when overall confidence is low, branches disagree strongly, too few branches succeeded, or the video disagrees with the rest. The dashboard then says so plainly instead of guessing.
 
 ---
 
-## 3. Visual Encoder
+## 🔐 Safety and Privacy
 
-### Candidate Models
+MindPulse AI is a wellbeing reflection tool. It is not a replacement for psychologists, doctors, or emergency services.
 
-- Vision Transformer (ViT)
-- CNN-based visual encoder
+### Safety design
 
-### Pipeline
+- **No diagnosis.** The product never states or implies a condition. Wording is "high stress and burnout signals".
+- **Evidence required.** Every stressor shows the student's own quote, verified in code.
+- **Uncertainty is visible.** Every result shows a confidence level, and low confidence shows a "please talk to a person" message.
+- **Crisis rules are deterministic.** Self-harm language is matched by rules, not by a learned model. An optional LLM second check can **add** a trigger but can never remove one.
+- **Helplines never come from a model.** Emergency numbers and hotlines come from a hand-verified list (with source link and verification date). Local places come from search, and every phone number and address is **copied from the fetched page text by code**, never written by a model. Results carry a "please verify" notice, and the helplines show first and never wait for search.
+- **Banned wording check** on all generated text (no diagnosis, no medication or dosage advice).
+- **Age and scope:** designed for ages 18-25 (self-declared), English only.
+
+### Privacy design
+
+- **No database, no accounts, no login, no browser storage.**
+- Video and audio are processed **in memory**; any unavoidable temp file is deleted in a `finally` block.
+- Server logs never contain request bodies, filenames, transcripts, or model outputs.
+- PDFs are generated in memory and streamed to the student. They are the only thing that persists, on the student's own device.
+- **Content is sent to model providers to produce results.** The consent screen says so honestly. It is "processed and not stored by us", not "never leaves your device".
+- The video is optional. Voice-only works fully.
+- An automated canary test checks that logs and temp directories contain none of the user's content.
+
+---
+
+## 🤖 AI Models
+
+All model calls go through provider interfaces, so any task can be pointed at a different provider, or at a self-hosted endpoint, by changing an environment variable.
+
+| Task | Approach |
+|---|---|
+| Speech to text | Hosted Whisper-family or transcription model, English forced |
+| Stressor extraction | Open instruction-tuned LLM (via Fireworks) or an OpenAI model, chosen by a bake-off on our labeled set, with JSON-schema output |
+| Frame observation | Vision-capable model that sees sampled frames and reports observable cues only |
+| Plan and chat | Same LLM family, with strict system prompts and output guards |
+| Crisis detection | **Rules only** (optional LLM second check that can only add triggers) |
+
+Every LLM output goes through: schema validation, one retry, deterministic verifiers (quote check, banned phrases, range clamps, 15-day plan checks), and a safe fallback. A failure never produces made-up content.
+
+No model is trained or fine-tuned in this project.
+
+> **Model selection results:** to be filled after the bake-off (see [Evaluation](#-evaluation)).
+
+---
+
+## 🟥 AMD Component
+
+> **Status: to be finalized.**
+>
+> The hackathon requires a meaningful part of the working product to run on AMD infrastructure. The team will fill in this section with:
+>
+> - which component runs on AMD (for example speech-to-text, or the main LLM served with vLLM on ROCm),
+> - the instance type used,
+> - measured latency and throughput.
+
+---
+
+## 🛠️ Technology Stack
+
+**Frontend:** React, TypeScript, Vite, React Router, Zustand (in-memory only), MediaRecorder API
+
+**Backend:** Python 3.11, FastAPI, Pydantic v2, Uvicorn, httpx, ffmpeg, `phonenumbers`, `rapidfuzz`, ReportLab, `sse-starlette`
+
+**AI providers:** Fireworks AI, OpenAI (interchangeable behind provider interfaces)
+
+**Testing and evaluation:** pytest, scikit-learn, a custom `/eval` harness
+
+**Deployment:** Docker, Docker Compose
+
+---
+
+## 📁 Project Structure
 
 ```text
-Video
- ↓
-Face Detection
- ↓
-Frame Extraction
- ↓
-ViT / CNN
- ↓
-Frame Embeddings
- ↓
-Temporal Aggregation
- ↓
-Visual Representation
-```
-
-The visual component is optional and should require explicit user consent.
-
----
-
-## 4. Behavioral Encoder
-
-Behavioral/contextual data can include:
-
-- Sleep duration
-- Study hours
-- Workload
-- Physical activity
-- Daily stress rating
-- Mood check-in
-- Number of tasks
-
-Pipeline:
-
-```text
-Behavioral Data
-      ↓
-Normalization
-      ↓
-MLP / Small Transformer
-      ↓
-Behavior Embedding
-```
-
----
-
-# 🔀 Multimodal Fusion
-
-Each modality produces an embedding:
-
-```text
-Text Embedding
-      │
-Voice Embedding
-      │
-Visual Embedding
-      │
-Behavior Embedding
-      │
-      ▼
-Multimodal Transformer
-      │
-      ▼
-Cross-Attention
-      │
-      ▼
-Unified Representation
-```
-
-The system can experiment with cross-attention rather than simply concatenating features.
-
-This is one of the project's primary deep-learning research components.
-
----
-
-# ⏳ Temporal Modeling
-
-The system maintains a sequence of daily multimodal representations.
-
-```text
-Day 1 → Embedding
-Day 2 → Embedding
-Day 3 → Embedding
-...
-Day 14 → Embedding
-       ↓
-Temporal Transformer
-       ↓
-Longitudinal Representation
-       ↓
-Trend Prediction
-```
-
-### Candidate Models
-
-- LSTM
-- GRU
-- Temporal Transformer
-
-The primary proposed architecture is a **Temporal Transformer**.
-
----
-
-# 🎯 Multi-Task Learning
-
-A shared representation feeds multiple prediction heads:
-
-```text
-                 Shared Representation
-                         │
-          ┌──────────────┼──────────────┐
-          ▼              ▼              ▼
-       Stress       Emotional       Risk
-       Indicator    Exhaustion      Trajectory
-```
-
-This allows the model to learn several related tasks using a shared multimodal representation.
-
----
-
-# 🔍 Explainable AI
-
-MindPulse AI should not simply output a number.
-
-Example:
-
-```text
-Recent Wellness Trend
-
-Stress-related signals     ████████████████
-Sleep pattern              █████████████
-Workload                    ███████████
-Voice signals               ████████
-Visual signals              █████
-```
-
-Potential explainability techniques:
-
-- SHAP
-- Grad-CAM
-- Attention visualization
-- Text attribution
-
-These explanations represent **model-attribution signals**, not clinical explanations.
-
----
-
-# 💬 Personalized Support Engine
-
-The prediction system provides structured outputs to a support engine.
-
-```text
-Model Output
-     ↓
-Trend Information
-     ↓
-Context
-     ↓
-Recommendation Engine
-     ↓
-Personalized Support
-```
-
-Possible support actions:
-
-- Suggest a short break
-- Recommend workload planning
-- Encourage a healthier sleep routine
-- Suggest relaxation activities
-- Encourage connecting with a trusted person
-- Encourage professional support when appropriate
-
-The language model should operate on structured model outputs and should not independently diagnose a user.
-
----
-
-# 🔄 Complete Data Flow
-
-```text
-User Interaction
-      ↓
-┌─────────────────────────────────────┐
-│ Text │ Voice │ Behavior │ Video    │
-└─────────────────┬───────────────────┘
-                  ↓
-          Modality Encoders
-                  ↓
-       Multimodal Embeddings
-                  ↓
-      Cross-Attention Fusion
-                  ↓
-       Temporal Transformer
-                  ↓
-        Multi-Task Prediction
-                  ↓
-      ┌───────────┴───────────┐
-      ↓                       ↓
-Explainability          Support Engine
-      │                       │
-      └───────────┬───────────┘
-                  ↓
-             Dashboard
-```
-
----
-
-# ✨ Core Features
-
-### 📝 Smart Journal
-
-Students can write daily journal entries that are analyzed using a Transformer model.
-
-### 🎙️ Voice Check-In
-
-Students can optionally record a short voice note.
-
-### 📊 Longitudinal Dashboard
-
-Visualizes changes over:
-
-- 7 days
-- 14 days
-- 30 days
-
-### 🧠 Multimodal AI
-
-Combines multiple sources instead of relying on a single modality.
-
-### 📈 Trend Detection
-
-Focuses on changes over time.
-
-### 🔍 Explainability
-
-Shows which signals contributed to the model's output.
-
-### 💬 Personalized Support
-
-Provides context-aware wellness suggestions.
-
-### 🔐 Privacy-Aware Design
-
-Sensitive information should be collected only with appropriate consent and handled securely.
-
----
-
-# 🛠️ Technology Stack
-
-## Deep Learning
-
-- Python
-- PyTorch
-- Hugging Face Transformers
-- BERT / RoBERTa / DeBERTa
-- wav2vec 2.0 / HuBERT
-- Vision Transformer
-- Temporal Transformer
-
-## Machine Learning
-
-- NumPy
-- Pandas
-- Scikit-learn
-
-## Explainability
-
-- SHAP
-- Grad-CAM
-- Attention Visualization
-
-## Backend
-
-- FastAPI
-- PostgreSQL / Supabase
-
-## Frontend
-
-- React
-- TypeScript
-- Material UI
-
-## Deployment
-
-- Docker
-- GPU inference where available
-
----
-
-# 📁 Proposed Project Structure
-
-```text
-mindpulse-ai/
-│
-├── README.md
-├── requirements.txt
-├── docker-compose.yml
-│
+mindpulse/
+├── frontend/               # Vite + React + TypeScript
+│   └── src/
+│       ├── api/            # fetch client, generated types
+│       ├── store/          # in-memory session store
+│       ├── screens/        # Landing, Consent, Profile, SpokenQuestions, Paragraph,
+│       │                   # Ratings, Processing, RedAlarm, Dashboard, EndSession
+│       ├── components/
+│       └── hooks/
 ├── backend/
-│   ├── api/
-│   ├── services/
-│   ├── schemas/
-│   └── main.py
-│
-├── frontend/
-│   ├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-│
-├── models/
-│   ├── text/
-│   ├── speech/
-│   ├── vision/
-│   ├── behavioral/
-│   ├── fusion/
-│   └── temporal/
-│
-├── training/
-│   ├── datasets/
-│   ├── preprocessing/
-│   ├── train_text.py
-│   ├── train_speech.py
-│   ├── train_vision.py
-│   ├── train_fusion.py
-│   └── train_temporal.py
-│
-├── explainability/
-│   ├── shap/
-│   ├── gradcam/
-│   └── attention/
-│
-├── notebooks/
-│   ├── exploration/
-│   └── experiments/
-│
-└── configs/
-    ├── model.yaml
-    └── training.yaml
+│   └── app/
+│       ├── main.py  schemas.py  config.py
+│       ├── routers/        # analyze, fuse, resources, plan, reports, chat, health
+│       ├── services/       # media, asr, crisis, text_analyzer, speech_features,
+│       │                   # video_analyzer, ratings, fusion, resources,
+│       │                   # plan_generator, pdf_builder, chat_service, providers/
+│       ├── data/           # crisis_terms, helplines, indicators, fusion.yaml,
+│       │                   # banned_phrases, fallback_plans
+│       └── prompts/        # text_analysis, video_observation, plan, chat_system,
+│                           # resource_extract
+├── eval/                   # datasets, run_all.py, report.md
+├── docker-compose.yml
+├── .env.example
+└── README.md
 ```
+
+The Pydantic models in `backend/app/schemas.py` are the single source of truth for every JSON shape. The frontend generates its TypeScript types from the backend's OpenAPI file.
 
 ---
 
-# 🧪 Training Strategy
+## 🔌 API Overview
 
-The project can be developed in stages.
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/api/v1/config` | Questions, rating items, limits, countries |
+| POST | `/api/v1/analyze/spoken` | One spoken answer (video or audio) |
+| POST | `/api/v1/analyze/paragraph` | Written paragraph |
+| POST | `/api/v1/analyze/ratings` | Five ratings |
+| POST | `/api/v1/fuse` | Merge branches and decide the alert |
+| POST | `/api/v1/resources/lookup` | Helplines and local places |
+| POST | `/api/v1/plan` | 15-day plan |
+| POST | `/api/v1/report/summary-pdf` | Wellbeing summary PDF |
+| POST | `/api/v1/report/plan-pdf` | 15-day plan PDF |
+| POST | `/api/v1/chat` | Side chat (SSE stream) |
 
-## Stage 1 — Individual Modality Models
+The current repository is a starter skeleton: all endpoints return HTTP 501 except
+`GET /api/v1/health`, which returns `{"status":"ok","version":"0.1.0"}`.
+Interactive documentation is available at `/docs` when the backend is running.
+
+---
+
+## 📊 Evaluation
+
+We evaluate every JSON output the system produces. All evaluation code is in `/eval` and runs with:
+
+```bash
+python -m eval.run_all --report eval/report.md
+```
+
+**All evaluation data was written and labeled by the team (or simulated) and is labeled as such. We make no claim of clinical validity.**
+
+| Component | Test | Metric |
+|---|---|---|
+| Speech-to-text | 15 recorded clips with reference transcripts | Word error rate |
+| Stressor extraction | 50 team-written paragraphs, labeled independently by two people and adjudicated | Per-indicator precision, recall, F1; level within 1; kappa |
+| Quote verification | Rejection rate of unsupported quotes | Kept quotes 100% verified |
+| Run-to-run stability | Each item run 3 times | Same-level agreement |
+| Crisis rules | 40 phrases (positives, negatives, idioms) | Recall on explicit positives, false positive rate |
+| Fusion | Table-driven tests and 12 simulated personas | Alert accuracy |
+| Helplines and local help | Manual verification; substring test of extracted numbers against page text | Verified count; substring pass rate |
+| Plan | Schema and rule checks; team rating of 10 plans | Valid rate; rule pass rate; mean rating |
+| Chat | 20 red-team prompts | Pass rate |
+| Video | 20 clips with hand-labeled "face visible" | Accuracy. **Labeled not validated.** |
+| Privacy | Canary string sent through all paths, logs and temp dirs scanned | 0 occurrences |
+
+### Results
+
+> **To be filled after the evaluation run.** Paste `eval/report.md` here.
+
+### Performance
+
+> **To be filled with measured p50 and p95 latency for each endpoint, including any AMD-hosted component.**
+
+---
+
+## ▶️ Running the Project
+
+```bash
+git clone <repository-url>
+cd mindpulse
+```
+
+Start the backend locally from `backend/`:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Start the frontend locally from `frontend/`:
+
+```bash
+npm install
+npm run dev
+```
+
+Run the backend placeholder tests:
+
+```bash
+cd backend
+pytest -q
+```
+
+The starter checks currently pass 5 tests, and the frontend production build
+passes with `npm run build`. Docker Compose is also available:
+
+```bash
+docker compose up --build
+```
+
+Copy `.env.example` to `.env` only for local configuration; never commit `.env`.
+
+Required environment variables (names only):
 
 ```text
-Text → Text Encoder
-Voice → Speech Encoder
-Video → Vision Encoder
-Behavior → MLP
+LLM_PROVIDER, LLM_MODEL, LLM_BASE_URL
+VISION_PROVIDER, VISION_MODEL
+ASR_PROVIDER, ASR_MODEL
+FIREWORKS_API_KEY, OPENAI_API_KEY, SEARCH_API_KEY
+CRISIS_LLM_CHECK, ALLOWED_ORIGINS, MAX_UPLOAD_MB
 ```
-
-Each encoder is evaluated independently.
-
-## Stage 2 — Multimodal Fusion
-
-```text
-Text + Voice + Behavior
-          ↓
-Multimodal Transformer
-```
-
-Compare multimodal performance against individual modalities.
-
-## Stage 3 — Temporal Modeling
-
-```text
-Daily Multimodal Representations
-          ↓
-Temporal Transformer
-          ↓
-Trend Prediction
-```
-
-## Stage 4 — Multi-Task Learning
-
-Train multiple prediction heads using a shared representation.
-
-## Stage 5 — Explainability
-
-Integrate attribution and visualization methods into the inference pipeline.
 
 ---
 
-# 📊 Evaluation
+## ⚠️ Limitations
 
-The system should be evaluated using quantitative metrics.
+We state these openly:
 
-## Classification
-
-- Accuracy
-- Precision
-- Recall
-- F1-score
-- AUROC
-- AUPRC
-
-## Regression
-
-- MAE
-- RMSE
-- R²
-
-## Temporal Evaluation
-
-- Early-warning detection performance
-- Trajectory prediction error
-- Detection lead time
+- **One session only.** With no stored history, the system cannot track a student over days or weeks. It compares the student's answers within one session and does not claim an early-warning trend.
+- **Ratings are self-reported** and are not a validated clinical scale.
+- **The video branch is experimental and not validated.** It has zero weight in the score and can only lower confidence.
+- **Evaluation data is team-written.** Results show how the pipeline behaves on our test set, not how it performs on real students.
+- **English only** and designed for ages 18-25; age is self-declared and cannot be verified.
+- **Local help results come from web search** and may be wrong or outdated. Only the hand-verified helpline list is treated as reliable, and only for the countries it covers.
+- Content is **sent to third-party model providers** for processing.
 
 ---
 
-# 🔬 Ablation Study
+## 🔭 Future Work
 
-One important experiment is to determine how much each modality contributes.
+The original research direction remains a clear roadmap, if the product is ever deployed with explicit consent and proper ethics review:
 
-```text
-Experiment 1
-Text only
-
-Experiment 2
-Text + Voice
-
-Experiment 3
-Text + Voice + Behavior
-
-Experiment 4
-Text + Voice + Behavior + Video
-
-Experiment 5
-Full Model + Temporal Transformer
-```
-
-This allows the team to demonstrate whether multimodal and temporal learning provide measurable improvements.
+- Optional, consent-based history for personal baselines and trajectories
+- A temporal model over daily multimodal representations, trained on properly collected longitudinal data
+- Explainability for behavioral features and richer attribution
+- Counselor-facing tools with strict access control and student consent
+- Validation studies with real students under ethical approval
+- Multilingual support, including Urdu
 
 ---
 
-# 🚀 Hackathon MVP
+## 👥 Team
 
-The complete architecture is ambitious, so the initial hackathon version should prioritize the core pipeline.
+| Member | Role |
+|---|---|
+| **Staeish** | Frontend |
+| **Laraib** | Frontend |
+| **Rumman** | Backend and engineering |
+| **Ali** | Backend and engineering |
 
-## MVP Architecture
-
-```text
-Journal
-   ↓
-Transformer
-   ↓
-Text Embedding
-        +
-Voice
-   ↓
-wav2vec2
-   ↓
-Voice Embedding
-        +
-Behavior
-        ↓
-Multimodal Fusion
-        ↓
-Temporal Transformer
-        ↓
-Risk Trajectory
-        ↓
-Dashboard
-```
-
-### Optional Advanced Components
-
-If the core system is stable:
-
-- Facial/video encoder
-- Cross-attention visualization
-- Multi-task learning
-- SHAP explanations
-- Grad-CAM
-- Personalized LLM support
-- Real-time inference
+All four members worked together on the AI track: prompts, model selection, labeled evaluation data, and evaluation.
 
 ---
 
-# 🎬 Example Demo
+## 🧾 Disclaimer
 
-A student opens MindPulse AI.
-
-### Step 1
-
-The application asks:
-
-> How was your day?
-
-The student writes a short journal entry.
-
-### Step 2
-
-The student records a 30-second voice note.
-
-### Step 3
-
-The application collects optional contextual information:
-
-```text
-Sleep: 5.5 hours
-Study: 8 hours
-Workload: High
-Self-reported stress: 7/10
-```
-
-### Step 4
-
-The AI processes the information:
-
-```text
-Text Encoder
-      +
-Speech Encoder
-      +
-Behavior Encoder
-      ↓
-Multimodal Fusion
-      ↓
-Temporal Model
-```
-
-### Step 5
-
-The dashboard shows the recent trajectory:
-
-```text
-7-Day Trend
-
-Day 1   ███████
-Day 2   ████████
-Day 3   █████████
-Day 4   ██████████
-Day 5   ███████████
-Day 6   █████████████
-Day 7   ██████████████
-```
-
-### Step 6
-
-The system presents a supportive message based on the model's detected trend.
-
----
-
-# 🔐 Safety & Privacy
-
-MindPulse AI is designed as a **wellness-support and early-warning system**, not as a replacement for:
-
-- Psychologists
-- Psychiatrists
-- Therapists
-- Doctors
-- Emergency services
-
-The system should:
-
-- Obtain explicit consent for sensitive inputs
-- Make video analysis optional
-- Minimize personal-data collection
-- Encrypt sensitive information
-- Allow users to delete their data
-- Avoid presenting model outputs as medical diagnoses
-- Communicate uncertainty
-- Provide appropriate guidance toward trusted humans or professional support when needed
-
-The system should have an appropriate crisis/safety flow for users who indicate immediate danger or self-harm concerns.
-
----
-
-# 🌟 Project Innovation
-
-The project combines several modern deep-learning concepts:
-
-```text
-Transformer Language Model
-          +
-Self-Supervised Speech Model
-          +
-Vision Transformer
-          +
-Behavior Encoder
-          +
-Multimodal Cross-Attention
-          +
-Temporal Transformer
-          +
-Multi-Task Learning
-          +
-Explainable AI
-```
-
-The central research idea is:
-
-> **Learn a longitudinal multimodal representation of a student's changing wellness-related patterns instead of making isolated single-session predictions.**
-
----
-
-# 🎯 Research Question
-
-> **Can longitudinal multimodal deep learning identify meaningful changes in a student's emotional and behavioral state earlier than single-modality or single-session approaches?**
-
----
-
-# 📌 One-Line Project Description
-
-> **MindPulse AI is a multimodal longitudinal deep-learning system that analyzes language, speech, behavior, and optional visual signals over time to identify changing wellness-related patterns and provide personalized supportive interventions.**
-
----
-
-## ⚠️ Disclaimer
-
-MindPulse AI is an experimental research/hackathon project intended for educational and wellness-support purposes. Its outputs are not medical diagnoses and should not be used as a substitute for professional medical or mental-health assessment.
+MindPulse AI is an experimental hackathon project intended for educational and wellbeing-support purposes. Its outputs are AI-generated reflections, not medical or psychological diagnoses, and must not be used as a substitute for professional assessment or care. If you are in immediate danger, contact your local emergency services.
