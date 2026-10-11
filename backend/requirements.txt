@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic
+httpx
+python-multipart
+phonenumbers
+rapidfuzz
+reportlab
+sse-starlette
+pyyaml
+pytest

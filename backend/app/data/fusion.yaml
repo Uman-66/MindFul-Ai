@@ -1,0 +1,6 @@
+branch_weights: {paragraph: 0.35, spoken: 0.30, ratings: 0.35}
+score_normalizer: 4.0
+levels: {moderate_min: 35, high_min: 65}
+high_signal_min_confidence: 0.5
+red_alarm: {crisis_any_source: true, safety_rating_min: 2, high_branches_required: 2}
+review: {min_overall_confidence: 0.5, max_branch_spread: 35, video_disagreement_penalty: 0.1}

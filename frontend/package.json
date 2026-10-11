@@ -1,0 +1,25 @@
+{
+  "name": "mindpulse-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "gen:types": "openapi-typescript http://localhost:8000/openapi.json -o src/api/types.ts"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-router-dom": "latest",
+    "zustand": "latest"
+  },
+  "devDependencies": {
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "openapi-typescript": "latest",
+    "typescript": "latest",
+    "vite": "latest"
+  }
+}
